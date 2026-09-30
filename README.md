@@ -6,6 +6,8 @@ Notification request удирдах жижиг full-stack serverless application
 
 Систем нь frontend application-оос хэрэглэгч notification request үүсгэх боломжтой байна. Backend нь тухайн request-ийг хүлээн авч, хадгалж, asynchronous processing хийхэд бэлдэнэ.
 
+Notification request-ийн processing status өөрчлөгдөх үед frontend нь **WebSocket connection** ашиглан backend-оос real-time update хүлээн авах боломжтой байна.
+
 Энэ даалгавар нь зориуд нээлттэй байдлаар өгөгдсөн. Та өөрөө боломжийн technical decision-үүд гаргаж, тэдгээрийг README дээрээ тайлбарлана.
 
 ## Хугацаа
@@ -23,6 +25,7 @@ Clean, correct, maintainable solution гаргахад төвлөрнө. Хэт 
 - Serverless Framework
 - AWS Lambda
 - API Gateway
+- API Gateway WebSocket API
 - DynamoDB
 - SQS
 
@@ -47,8 +50,25 @@ Application дараах ерөнхий behavior-ийг дэмждэг байн�
 3. Шаардлага хангасан notification request-үүд DynamoDB-д хадгалагдана.
 4. Хадгалагдсан notification request-үүд тодорхой status эсвэл lifecycle-тэй байна.
 5. Notification request-үүд SQS ашиглан asynchronous processing flow руу илгээгдэнэ.
-6. Frontend илгээсэн notification request-үүд эсвэл submit хийсэн request-ийн result-ийг харуулах боломжтой байна.
-7. Frontend амжилттай болон амжилтгүй action-д ойлгомжтой feedback харуулна.
+6. Asynchronous processing-ийн явцад notification request-ийн status өөрчлөгдөх боломжтой байна.
+7. Frontend нь **WebSocket ашиглан notification request-ийн status/result update-ийг real-time хүлээн авна**.
+8. Frontend илгээсэн notification request-үүд эсвэл submit хийсэн request-ийн result-ийг харуулах боломжтой байна.
+9. Frontend амжилттай болон амжилтгүй action-д ойлгомжтой feedback харуулна.
+
+## WebSocket requirement
+
+WebSocket connection ашиглан backend-ээс frontend рүү notification request-ийн өөрчлөлтийг push хийх шаардлагатай.
+
+Жишээлбэл:
+
+- Request `PENDING` төлөвтэй үүснэ.
+- Request SQS руу илгээгдэнэ.
+- Worker Lambda request-ийг process хийнэ.
+- Processing дууссаны дараа status `COMPLETED` эсвэл `FAILED` болж өөрчлөгдөнө.
+- Backend тухайн update-ийг WebSocket ашиглан frontend рүү илгээнэ.
+- Frontend polling хийхгүйгээр өөрчлөгдсөн status/result-ийг UI дээр харуулна.
+
+WebSocket connection management, connection ID хадгалах арга болон client-д message хэрхэн хүргэх architecture-ийг candidate өөрөө шийдэж, README дээр тайлбарлана.
 
 ## Та өөрөө шийдэх зүйлс
 
@@ -61,6 +81,8 @@ Application дараах ерөнхий behavior-ийг дэмждэг байн�
 - DynamoDB table design
 - DynamoDB key structure
 - SQS message structure
+- WebSocket message structure
+- WebSocket connection management
 - Lambda function structure
 - Нэг Lambda ашиглах уу эсвэл олон Lambda ашиглах уу
 - Asynchronous processing flow хэрхэн ажиллах
